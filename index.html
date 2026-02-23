@@ -1663,7 +1663,7 @@ async function loadDashboard() {
 async function loadReports() {
   if (!currentUser) return;
 
-  const { data: reports, error } = await supabase
+  const { data: reports, error } = await sb
     .from('reports')
     .select('*')
     .eq('user_id', currentUser.id)
