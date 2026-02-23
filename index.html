@@ -1,0 +1,2148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>Damage Shield — Vehicle Protection for Detailers</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #0c0c0c;
+      --bg2: #141414;
+      --bg3: #1c1c1c;
+      --border: #272727;
+      --border2: #333;
+      --gold: #c8892a;
+      --gold2: #e0a030;
+      --gold-dim: rgba(200,137,42,0.12);
+      --text: #e8e8e8;
+      --text2: #aaa;
+      --text3: #666;
+      --red: #c0392b;
+      --green: #27ae60;
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      height: 100%;
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    /* ── SCREENS ── */
+    .screen { display: none; min-height: 100vh; }
+    .screen.active { display: flex; flex-direction: column; }
+
+    /* ── LANDING ── */
+    #screen-landing {
+      background: var(--bg);
+      position: relative;
+      overflow: hidden;
+      justify-content: center;
+      align-items: center;
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .landing-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(200,137,42,0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .landing-grain {
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .landing-content { position: relative; z-index: 1; max-width: 420px; }
+
+    .landing-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--gold-dim);
+      border: 1px solid rgba(200,137,42,0.3);
+      color: var(--gold);
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      padding: 6px 14px;
+      border-radius: 100px;
+      margin-bottom: 28px;
+      animation: fadeUp 0.6s ease both;
+    }
+
+    .landing-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(36px, 10vw, 52px);
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text);
+      margin-bottom: 6px;
+      animation: fadeUp 0.6s 0.1s ease both;
+    }
+
+    .landing-title span { color: var(--gold); }
+
+    .landing-sub {
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 40px;
+      line-height: 1.7;
+      animation: fadeUp 0.6s 0.2s ease both;
+    }
+
+    .landing-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 40px;
+      text-align: left;
+      animation: fadeUp 0.6s 0.3s ease both;
+    }
+
+    .landing-step {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .step-num {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: var(--gold-dim);
+      border: 1px solid rgba(200,137,42,0.4);
+      color: var(--gold);
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .step-text { font-size: 13px; color: var(--text2); }
+    .step-text strong { color: var(--text); display: block; font-size: 14px; }
+
+    .landing-cta-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      animation: fadeUp 0.6s 0.4s ease both;
+    }
+
+    .btn-primary {
+      width: 100%;
+      padding: 16px 24px;
+      background: var(--gold);
+      color: #0c0c0c;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+      letter-spacing: 0.3px;
+    }
+
+    .btn-primary:active { transform: scale(0.97); background: var(--gold2); }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 16px 24px;
+      background: transparent;
+      color: var(--text2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 400;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-secondary:active { transform: scale(0.97); border-color: var(--gold); color: var(--gold); }
+
+    .landing-disclaimer {
+      font-size: 11px;
+      color: var(--text3);
+      margin-top: 20px;
+      animation: fadeUp 0.6s 0.5s ease both;
+    }
+
+    /* ── AUTH ── */
+    #screen-auth {
+      justify-content: center;
+      align-items: center;
+      padding: 40px 24px;
+    }
+
+    .auth-box {
+      width: 100%;
+      max-width: 400px;
+    }
+
+    .auth-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text3);
+      font-size: 13px;
+      cursor: pointer;
+      margin-bottom: 32px;
+      transition: color 0.2s;
+    }
+    .auth-back:hover { color: var(--gold); }
+
+    .auth-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      color: var(--gold);
+      margin-bottom: 6px;
+    }
+
+    .auth-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+
+    .auth-sub { font-size: 13px; color: var(--text3); margin-bottom: 32px; }
+
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 4px;
+      margin-bottom: 28px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      text-align: center;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border-radius: 6px;
+      color: var(--text3);
+      transition: all 0.2s;
+      border: none;
+      background: transparent;
+      font-family: 'DM Sans', sans-serif;
+    }
+
+    .auth-tab.active {
+      background: var(--bg3);
+      color: var(--text);
+      border: 1px solid var(--border2);
+    }
+
+    .form-group { margin-bottom: 16px; }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+      -webkit-appearance: none;
+    }
+
+    .form-input:focus { border-color: var(--gold); }
+    .form-input::placeholder { color: var(--text3); }
+
+    select.form-input {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23666' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 36px;
+      cursor: pointer;
+    }
+
+    select.form-input option { background: #1c1c1c; }
+
+    .form-error {
+      font-size: 12px;
+      color: #e74c3c;
+      margin-top: 6px;
+      display: none;
+    }
+
+    .auth-forgot {
+      text-align: right;
+      margin-top: -8px;
+      margin-bottom: 20px;
+    }
+
+    .auth-forgot a {
+      font-size: 12px;
+      color: var(--text3);
+      cursor: pointer;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .auth-forgot a:hover { color: var(--gold); }
+
+    /* ── DASHBOARD ── */
+    #screen-dashboard { background: var(--bg); }
+
+    .dash-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 20px 20px 16px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(12,12,12,0.95);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+    }
+
+    .dash-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      color: var(--gold);
+      letter-spacing: 0.5px;
+    }
+
+    .dash-logo span { font-size: 12px; color: var(--text3); display: block; font-family: 'DM Sans', sans-serif; font-weight: 300; letter-spacing: 0; }
+
+    .dash-menu-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text2);
+      font-size: 16px;
+      transition: all 0.2s;
+    }
+
+    .dash-menu-btn:active { border-color: var(--gold); color: var(--gold); }
+
+    .dash-body { padding: 24px 20px; flex: 1; }
+
+    .dash-greeting {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      margin-bottom: 4px;
+    }
+
+    .dash-greeting span { color: var(--gold); }
+
+    .dash-subtitle { font-size: 13px; color: var(--text3); margin-bottom: 28px; }
+
+    .new-report-btn {
+      width: 100%;
+      padding: 20px 24px;
+      background: var(--gold);
+      color: #0c0c0c;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+      margin-bottom: 32px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .new-report-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%);
+    }
+
+    .new-report-btn:active { transform: scale(0.98); }
+
+    .new-report-btn .btn-icon { font-size: 20px; }
+
+    .section-label {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 14px;
+    }
+
+    .report-list { display: flex; flex-direction: column; gap: 10px; }
+
+    .report-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .report-card:active { border-color: var(--gold); background: var(--bg3); }
+
+    .report-card-left { flex: 1; }
+
+    .report-card-name {
+      font-weight: 500;
+      font-size: 15px;
+      margin-bottom: 3px;
+    }
+
+    .report-card-vehicle {
+      font-size: 12px;
+      color: var(--text3);
+    }
+
+    .report-card-right { text-align: right; }
+
+    .report-card-date {
+      font-size: 11px;
+      color: var(--text3);
+      margin-bottom: 4px;
+    }
+
+    .report-card-badge {
+      display: inline-block;
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 100px;
+      background: rgba(39,174,96,0.15);
+      color: #2ecc71;
+      border: 1px solid rgba(39,174,96,0.3);
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--text3);
+    }
+
+    .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+    .empty-text { font-size: 14px; line-height: 1.6; }
+
+    /* ── REPORT BUILDER ── */
+    #screen-report { background: var(--bg); }
+
+    .report-header {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(12,12,12,0.95);
+      backdrop-filter: blur(12px);
+      z-index: 10;
+      gap: 12px;
+    }
+
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text2);
+      font-size: 18px;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .back-btn:active { border-color: var(--gold); color: var(--gold); }
+
+    .report-header-title { flex: 1; }
+    .report-header-title h2 { font-family: 'Playfair Display', serif; font-size: 18px; }
+    .report-header-title p { font-size: 11px; color: var(--text3); }
+
+    /* Step indicator */
+    .step-indicator {
+      display: flex;
+      align-items: center;
+      padding: 16px 20px;
+      gap: 6px;
+    }
+
+    .step-dot {
+      height: 3px;
+      flex: 1;
+      border-radius: 100px;
+      background: var(--border2);
+      transition: background 0.3s;
+    }
+
+    .step-dot.active { background: var(--gold); }
+    .step-dot.done { background: rgba(200,137,42,0.4); }
+
+    .step-label {
+      font-size: 11px;
+      color: var(--text3);
+      padding: 0 20px 12px;
+    }
+
+    .step-label strong { color: var(--gold); }
+
+    /* Report steps */
+    .report-step { display: none; padding: 0 20px 100px; }
+    .report-step.active { display: block; }
+
+    .step-section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      margin-bottom: 6px;
+      padding-top: 12px;
+    }
+
+    .step-section-sub {
+      font-size: 13px;
+      color: var(--text3);
+      margin-bottom: 24px;
+    }
+
+    /* Damage items */
+    .damage-item-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .damage-item-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .damage-item-num {
+      font-size: 11px;
+      color: var(--gold);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .damage-item-remove {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      background: rgba(192,57,43,0.1);
+      border: 1px solid rgba(192,57,43,0.2);
+      color: #e74c3c;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .damage-item-remove:active { background: rgba(192,57,43,0.3); }
+
+    .damage-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+
+    /* Photo capture */
+    .photo-capture-area {
+      border: 2px dashed var(--border2);
+      border-radius: var(--radius-sm);
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .photo-capture-area.has-photo {
+      border-color: var(--gold);
+      border-style: solid;
+      padding: 0;
+    }
+
+    .photo-capture-area:active { border-color: var(--gold); background: var(--gold-dim); }
+
+    .photo-preview {
+      width: 100%;
+      max-height: 150px;
+      object-fit: cover;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .photo-capture-area.has-photo .photo-preview { display: block; }
+    .photo-capture-area.has-photo .photo-placeholder { display: none; }
+
+    .photo-placeholder { color: var(--text3); }
+    .photo-placeholder .photo-icon { font-size: 28px; margin-bottom: 8px; }
+    .photo-placeholder p { font-size: 12px; }
+
+    .photo-input { display: none; }
+
+    .photo-change-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.7);
+      color: var(--gold);
+      font-size: 11px;
+      padding: 8px;
+      text-align: center;
+      display: none;
+    }
+
+    .photo-capture-area.has-photo .photo-change-overlay { display: block; }
+
+    .add-damage-btn {
+      width: 100%;
+      padding: 14px;
+      background: transparent;
+      border: 2px dashed var(--border2);
+      border-radius: var(--radius);
+      color: var(--text2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .add-damage-btn:active { border-color: var(--gold); color: var(--gold); }
+
+    /* Signature */
+    .sig-container {
+      background: #fff;
+      border-radius: var(--radius);
+      overflow: hidden;
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    #signature-canvas {
+      display: block;
+      width: 100%;
+      height: 200px;
+      touch-action: none;
+      cursor: crosshair;
+    }
+
+    .sig-hint {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 13px;
+      color: #bbb;
+      pointer-events: none;
+      text-align: center;
+      transition: opacity 0.3s;
+    }
+
+    .sig-hint.hidden { opacity: 0; }
+
+    .sig-clear-btn {
+      background: transparent;
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      padding: 10px 20px;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .sig-clear-btn:active { border-color: var(--gold); color: var(--gold); }
+
+    .client-notice {
+      background: var(--gold-dim);
+      border: 1px solid rgba(200,137,42,0.25);
+      border-radius: var(--radius-sm);
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text2);
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    .client-notice strong { color: var(--gold); display: block; margin-bottom: 4px; }
+
+    /* Review step */
+    .review-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .review-section-title {
+      font-size: 10px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--gold);
+      margin-bottom: 12px;
+    }
+
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .review-row:last-child { border-bottom: none; }
+    .review-row span:first-child { color: var(--text3); }
+    .review-row span:last-child { color: var(--text); font-weight: 500; }
+
+    .review-damage-item {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .review-damage-item:last-child { border-bottom: none; }
+
+    .review-damage-thumb {
+      width: 52px;
+      height: 40px;
+      border-radius: 6px;
+      object-fit: cover;
+      border: 1px solid var(--border2);
+      flex-shrink: 0;
+    }
+
+    .review-damage-thumb-placeholder {
+      width: 52px;
+      height: 40px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--bg3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+
+    .review-damage-info { flex: 1; }
+    .review-damage-type { font-size: 13px; font-weight: 500; }
+    .review-damage-loc { font-size: 11px; color: var(--text3); }
+
+    .review-sig-preview {
+      background: white;
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      text-align: center;
+    }
+
+    .review-sig-preview img {
+      max-height: 60px;
+      max-width: 100%;
+    }
+
+    /* Bottom action bar */
+    .bottom-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 20px;
+      background: rgba(12,12,12,0.97);
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(12px);
+      display: flex;
+      gap: 10px;
+      z-index: 20;
+    }
+
+    .btn-next {
+      flex: 1;
+      padding: 16px;
+      background: var(--gold);
+      color: #0c0c0c;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      border: none;
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-next:active { transform: scale(0.98); }
+    .btn-next:disabled { background: var(--border2); color: var(--text3); cursor: not-allowed; transform: none; }
+
+    .btn-prev {
+      padding: 16px 20px;
+      background: transparent;
+      color: var(--text2);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 15px;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-prev:active { border-color: var(--gold); color: var(--gold); }
+
+    /* Loading spinner */
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(12,12,12,0.3);
+      border-top-color: #0c0c0c;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+
+    /* ── SUCCESS ── */
+    #screen-success {
+      justify-content: center;
+      align-items: center;
+      padding: 40px 24px;
+      text-align: center;
+    }
+
+    .success-icon {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: rgba(39,174,96,0.15);
+      border: 2px solid rgba(39,174,96,0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 36px;
+      margin: 0 auto 24px;
+      animation: successPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) both;
+    }
+
+    .success-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 28px;
+      margin-bottom: 8px;
+      animation: fadeUp 0.5s 0.2s ease both;
+    }
+
+    .success-name {
+      color: var(--gold);
+    }
+
+    .success-sub {
+      font-size: 14px;
+      color: var(--text3);
+      margin-bottom: 32px;
+      line-height: 1.6;
+      animation: fadeUp 0.5s 0.3s ease both;
+    }
+
+    .success-detail {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      margin-bottom: 32px;
+      text-align: left;
+      animation: fadeUp 0.5s 0.4s ease both;
+    }
+
+    .success-detail-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      padding: 6px 0;
+    }
+
+    .success-detail-row span:first-child { color: var(--text3); }
+    .success-detail-row span:last-child { color: var(--text); }
+
+    /* ── PAYWALL ── */
+    .paywall-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: blur(8px);
+      z-index: 100;
+      justify-content: center;
+      align-items: flex-end;
+    }
+
+    .paywall-overlay.active { display: flex; }
+
+    .paywall-sheet {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 24px 24px 0 0;
+      padding: 32px 24px 48px;
+      width: 100%;
+      max-width: 480px;
+      animation: slideUp 0.35s cubic-bezier(0.165, 0.84, 0.44, 1) both;
+    }
+
+    .paywall-handle {
+      width: 40px;
+      height: 4px;
+      background: var(--border2);
+      border-radius: 100px;
+      margin: 0 auto 24px;
+    }
+
+    .paywall-icon { font-size: 36px; margin-bottom: 16px; }
+
+    .paywall-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 26px;
+      margin-bottom: 8px;
+    }
+
+    .paywall-sub {
+      font-size: 14px;
+      color: var(--text2);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .paywall-price {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 24px;
+    }
+
+    .paywall-amount {
+      font-family: 'Playfair Display', serif;
+      font-size: 42px;
+      color: var(--gold);
+    }
+
+    .paywall-period { font-size: 14px; color: var(--text3); }
+
+    .paywall-features {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .paywall-feature {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 14px;
+      color: var(--text2);
+    }
+
+    .paywall-feature-check {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: rgba(39,174,96,0.15);
+      color: #2ecc71;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .paywall-close {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 13px;
+      color: var(--text3);
+      cursor: pointer;
+      padding: 8px;
+      transition: color 0.2s;
+    }
+
+    .paywall-close:hover { color: var(--text); }
+
+    /* ── MENU DRAWER ── */
+    .menu-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.6);
+      z-index: 50;
+    }
+
+    .menu-overlay.active { display: block; }
+
+    .menu-drawer {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 280px;
+      height: 100vh;
+      background: var(--bg2);
+      border-left: 1px solid var(--border);
+      z-index: 51;
+      padding: 60px 24px 40px;
+      transition: right 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .menu-drawer.open { right: 0; }
+
+    .menu-user {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .menu-user-name {
+      font-family: 'Playfair Display', serif;
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .menu-user-email { font-size: 12px; color: var(--text3); }
+
+    .menu-items { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+
+    .menu-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 15px;
+      cursor: pointer;
+      color: var(--text2);
+      transition: all 0.2s;
+    }
+
+    .menu-item:hover { background: var(--bg3); color: var(--text); }
+    .menu-item.danger { color: #e74c3c; }
+    .menu-item.danger:hover { background: rgba(231,76,60,0.1); }
+
+    .menu-item-icon { font-size: 18px; width: 24px; text-align: center; }
+
+    .menu-report-count {
+      background: var(--gold-dim);
+      border: 1px solid rgba(200,137,42,0.3);
+      border-radius: var(--radius-sm);
+      padding: 12px 16px;
+      margin-bottom: 24px;
+      font-size: 13px;
+      color: var(--text2);
+    }
+
+    .menu-report-count strong { color: var(--gold); font-size: 20px; display: block; margin-bottom: 2px; }
+
+    /* ── TOAST ── */
+    .toast {
+      position: fixed;
+      bottom: 90px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: var(--bg3);
+      border: 1px solid var(--border2);
+      border-radius: 100px;
+      padding: 10px 20px;
+      font-size: 13px;
+      color: var(--text);
+      white-space: nowrap;
+      opacity: 0;
+      transition: all 0.3s;
+      z-index: 200;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideUp {
+      from { transform: translateY(100%); }
+      to { transform: translateY(0); }
+    }
+
+    @keyframes successPop {
+      from { transform: scale(0.5); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── UTILITIES ── */
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mt-24 { margin-top: 24px; }
+    .text-gold { color: var(--gold); }
+    .text-dim { color: var(--text3); font-size: 12px; }
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* Scrollable report list on dashboard */
+    .dash-scroll { flex: 1; overflow-y: auto; }
+  </style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- SCREEN: LANDING -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen active" id="screen-landing">
+  <div class="landing-bg"></div>
+  <div class="landing-grain"></div>
+  <div class="landing-content">
+    <div class="landing-badge">⚡ For Auto Detailers</div>
+    <h1 class="landing-title">Damage<br/><span>Shield</span></h1>
+    <p class="landing-sub">Stop getting blamed for damage you didn't cause. Document pre-existing damage, get a client signature, and send a signed PDF — all in under 60 seconds.</p>
+
+    <div class="landing-steps">
+      <div class="landing-step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          <strong>Photograph the damage</strong>
+          Tap and snap each pre-existing issue on the vehicle.
+        </div>
+      </div>
+      <div class="landing-step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          <strong>Client signs on screen</strong>
+          They confirm the damage existed before you touched it.
+        </div>
+      </div>
+      <div class="landing-step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          <strong>PDF sent to both parties</strong>
+          Timestamped, signed, and in both inboxes instantly.
+        </div>
+      </div>
+    </div>
+
+    <div class="landing-cta-group">
+      <button class="btn-primary" onclick="showAuth('signup')">Start Free — 5 Reports on Us</button>
+      <button class="btn-secondary" onclick="showAuth('login')">Sign In</button>
+    </div>
+
+    <p class="landing-disclaimer">No credit card required · 5 free reports · Then $20/month</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- SCREEN: AUTH -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen" id="screen-auth">
+  <div class="auth-box">
+    <div class="auth-back" onclick="showScreen('landing')">
+      ← Back
+    </div>
+    <div class="auth-logo">⚡</div>
+    <h2 class="auth-title" id="auth-title">Create Account</h2>
+    <p class="auth-sub" id="auth-sub">Start protecting your business today.</p>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+      <button class="auth-tab" id="tab-login" onclick="switchAuthTab('login')">Sign In</button>
+    </div>
+
+    <!-- Sign Up Form -->
+    <div id="form-signup">
+      <div class="form-group">
+        <label class="form-label">Your Name</label>
+        <input type="text" class="form-input" id="signup-name" placeholder="Marcus Johnson" autocomplete="name" />
+        <div class="form-error" id="err-signup-name">Please enter your name.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="signup-email" placeholder="you@example.com" autocomplete="email" />
+        <div class="form-error" id="err-signup-email">Please enter a valid email.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password" />
+        <div class="form-error" id="err-signup-pass">Password must be at least 8 characters.</div>
+      </div>
+      <button class="btn-primary" id="btn-signup" onclick="handleSignup()">
+        <span id="signup-label">Create Account</span>
+        <div class="spinner" id="signup-spinner"></div>
+      </button>
+      <div class="form-error mt-8" id="err-signup-general"></div>
+    </div>
+
+    <!-- Sign In Form -->
+    <div id="form-login" style="display:none;">
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" id="login-email" placeholder="you@example.com" autocomplete="email" />
+        <div class="form-error" id="err-login-email">Please enter a valid email.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" class="form-input" id="login-password" placeholder="Your password" autocomplete="current-password" />
+        <div class="form-error" id="err-login-pass">Please enter your password.</div>
+      </div>
+      <div class="auth-forgot"><a onclick="handleForgotPassword()">Forgot password?</a></div>
+      <button class="btn-primary" id="btn-login" onclick="handleLogin()">
+        <span id="login-label">Sign In</span>
+        <div class="spinner" id="login-spinner"></div>
+      </button>
+      <div class="form-error mt-8" id="err-login-general"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- SCREEN: DASHBOARD -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen" id="screen-dashboard">
+  <div class="dash-header">
+    <div class="dash-logo">
+      ⚡ Damage Shield
+      <span id="dash-user-email"></span>
+    </div>
+    <div class="dash-menu-btn" onclick="openMenu()">☰</div>
+  </div>
+
+  <div class="dash-body">
+    <h2 class="dash-greeting">Good work, <span id="dash-user-name">Detailer</span>.</h2>
+    <p class="dash-subtitle" id="dash-report-status">Loading your reports...</p>
+
+    <button class="new-report-btn" id="btn-new-report" onclick="startNewReport()">
+      <span class="btn-icon">+</span>
+      New Damage Report
+    </button>
+
+    <div class="section-label">Recent Reports</div>
+    <div class="report-list" id="report-list">
+      <div class="empty-state">
+        <div class="empty-icon">🛡️</div>
+        <div class="empty-text">No reports yet.<br/>Start your first one above.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MENU DRAWER -->
+<div class="menu-overlay" id="menu-overlay" onclick="closeMenu()"></div>
+<div class="menu-drawer" id="menu-drawer">
+  <div class="menu-user">
+    <div class="menu-user-name" id="menu-user-name">—</div>
+    <div class="menu-user-email" id="menu-user-email-menu">—</div>
+  </div>
+  <div class="menu-report-count">
+    <strong id="menu-report-count">0</strong>
+    Reports sent
+  </div>
+  <div class="menu-items">
+    <div class="menu-item" onclick="closeMenu(); startNewReport();">
+      <span class="menu-item-icon">+</span> New Report
+    </div>
+    <div class="menu-item" onclick="openPaywall()">
+      <span class="menu-item-icon">⚡</span> Upgrade to Pro
+    </div>
+    <div class="menu-item danger" onclick="handleSignOut()">
+      <span class="menu-item-icon">→</span> Sign Out
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- SCREEN: REPORT BUILDER -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen" id="screen-report">
+  <div class="report-header">
+    <div class="back-btn" onclick="confirmExitReport()">←</div>
+    <div class="report-header-title">
+      <h2>New Report</h2>
+      <p id="report-step-label">Step 1 of 4</p>
+    </div>
+  </div>
+
+  <!-- Step dots -->
+  <div class="step-indicator">
+    <div class="step-dot active" id="dot-1"></div>
+    <div class="step-dot" id="dot-2"></div>
+    <div class="step-dot" id="dot-3"></div>
+    <div class="step-dot" id="dot-4"></div>
+  </div>
+
+  <!-- ── STEP 1: CLIENT & VEHICLE ── -->
+  <div class="report-step active" id="step-1">
+    <h3 class="step-section-title">Client & Vehicle</h3>
+    <p class="step-section-sub">Enter the client's details and the vehicle you're working on.</p>
+
+    <div class="form-group">
+      <label class="form-label">Client Name</label>
+      <input type="text" class="form-input" id="r-client-name" placeholder="Sandra Williams" autocomplete="off" />
+    </div>
+    <div class="form-group">
+      <label class="form-label">Client Email</label>
+      <input type="email" class="form-input" id="r-client-email" placeholder="sandra@email.com" autocomplete="off" />
+    </div>
+    <div class="divider"></div>
+    <div class="form-group">
+      <label class="form-label">Vehicle Make & Model</label>
+      <input type="text" class="form-input" id="r-make-model" placeholder="BMW 3 Series" autocomplete="off" />
+    </div>
+    <div class="damage-row">
+      <div class="form-group">
+        <label class="form-label">Year</label>
+        <input type="text" class="form-input" id="r-year" placeholder="2021" inputmode="numeric" maxlength="4" />
+      </div>
+      <div class="form-group">
+        <label class="form-label">Colour</label>
+        <input type="text" class="form-input" id="r-colour" placeholder="Midnight Blue" />
+      </div>
+    </div>
+  </div>
+
+  <!-- ── STEP 2: DAMAGE ITEMS ── -->
+  <div class="report-step" id="step-2">
+    <h3 class="step-section-title">Damage Items</h3>
+    <p class="step-section-sub">Document each area of pre-existing damage. Tap a photo for each one.</p>
+
+    <div id="damage-items-container"></div>
+
+    <button class="add-damage-btn" onclick="addDamageItem()">
+      + Add Another Damage Item
+    </button>
+  </div>
+
+  <!-- ── STEP 3: SIGNATURE ── -->
+  <div class="report-step" id="step-3">
+    <h3 class="step-section-title">Client Signature</h3>
+    <p class="step-section-sub">Hand the phone to your client to sign.</p>
+
+    <div class="client-notice">
+      <strong>📋 For your client to read:</strong>
+      By signing below, I confirm that all damage documented in this report was pre-existing on my vehicle prior to any detailing services being performed.
+    </div>
+
+    <div class="sig-container">
+      <canvas id="signature-canvas"></canvas>
+      <div class="sig-hint" id="sig-hint">Sign here with your finger</div>
+    </div>
+
+    <button class="sig-clear-btn" onclick="clearSignature()">Clear Signature</button>
+  </div>
+
+  <!-- ── STEP 4: REVIEW & SEND ── -->
+  <div class="report-step" id="step-4">
+    <h3 class="step-section-title">Review & Send</h3>
+    <p class="step-section-sub">Check everything looks right, then send.</p>
+
+    <div class="review-card">
+      <div class="review-section-title">Client & Vehicle</div>
+      <div class="review-row">
+        <span>Client</span>
+        <span id="rev-client-name">—</span>
+      </div>
+      <div class="review-row">
+        <span>Email</span>
+        <span id="rev-client-email">—</span>
+      </div>
+      <div class="review-row">
+        <span>Vehicle</span>
+        <span id="rev-vehicle">—</span>
+      </div>
+    </div>
+
+    <div class="review-card">
+      <div class="review-section-title">Damage Items</div>
+      <div id="rev-damage-items"></div>
+    </div>
+
+    <div class="review-card">
+      <div class="review-section-title">Client Signature</div>
+      <div class="review-sig-preview">
+        <img id="rev-signature" src="" alt="Signature" />
+      </div>
+    </div>
+
+    <div class="review-card" style="background: var(--gold-dim); border-color: rgba(200,137,42,0.25);">
+      <div style="font-size:12px;color:var(--text2);line-height:1.6;">
+        📧 A signed PDF will be sent to <strong id="rev-send-to" style="color:var(--text);">—</strong> and to your registered email simultaneously.
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="bottom-bar">
+    <button class="btn-prev" id="btn-prev" onclick="prevStep()" style="display:none;">Back</button>
+    <button class="btn-next" id="btn-next" onclick="nextStep()">
+      <span id="btn-next-label">Continue</span>
+      <div class="spinner" id="send-spinner"></div>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- SCREEN: SUCCESS -->
+<!-- ══════════════════════════════════════ -->
+<div class="screen" id="screen-success">
+  <div style="width:100%;max-width:440px;margin:0 auto;padding:40px 24px;">
+    <div class="success-icon">✓</div>
+    <h2 class="success-title">Report Sent to<br/><span class="success-name" id="success-client-name">—</span></h2>
+    <p class="success-sub" id="success-sub">The signed PDF has been delivered to both inboxes.</p>
+
+    <div class="success-detail" id="success-detail"></div>
+
+    <button class="btn-primary" onclick="showScreen('dashboard'); loadReports();">Back to Dashboard</button>
+    <div style="height:12px;"></div>
+    <button class="btn-secondary" onclick="startNewReport()">Start Another Report</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- PAYWALL OVERLAY -->
+<!-- ══════════════════════════════════════ -->
+<div class="paywall-overlay" id="paywall-overlay">
+  <div class="paywall-sheet">
+    <div class="paywall-handle"></div>
+    <div class="paywall-icon">⚡</div>
+    <h2 class="paywall-title">Unlock Damage Shield Pro</h2>
+    <p class="paywall-sub">You've used your 5 free reports. For one low monthly price, protect every single job you do.</p>
+
+    <div class="paywall-price">
+      <span class="paywall-amount">$20</span>
+      <span class="paywall-period">/ month</span>
+    </div>
+
+    <div class="paywall-features">
+      <div class="paywall-feature">
+        <div class="paywall-feature-check">✓</div>
+        Unlimited damage reports
+      </div>
+      <div class="paywall-feature">
+        <div class="paywall-feature-check">✓</div>
+        Signed PDFs to both parties instantly
+      </div>
+      <div class="paywall-feature">
+        <div class="paywall-feature-check">✓</div>
+        Timestamped legal documentation
+      </div>
+      <div class="paywall-feature">
+        <div class="paywall-feature-check">✓</div>
+        Full report history
+      </div>
+    </div>
+
+    <button class="btn-primary" onclick="goToStripe()">Activate Pro — $20/month</button>
+    <div class="paywall-close" onclick="closePaywall()">Maybe later</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════ -->
+<!-- JAVASCRIPT -->
+<!-- ══════════════════════════════════════ -->
+<script>
+// ── CONFIG ──
+const SUPABASE_URL = 'https://mzhnclfxvlrrkgpbqjuy.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_uSwhuVJMg04QvrlqLXFPkg_6dyXw_ob';
+const STRIPE_LINK = 'https://buy.stripe.com/3cI9AS8nW2iY2NsgZZ7g400';
+const FREE_REPORT_LIMIT = 5;
+const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/send-report`;
+
+const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ── STATE ──
+let currentUser = null;
+let currentStep = 1;
+let totalSteps = 4;
+let damageItems = [];
+let signatureData = null;
+let sigCanvas, sigCtx, isDrawing = false;
+let reportCount = 0;
+
+// ── INIT ──
+(async () => {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadDashboard();
+    showScreen('dashboard');
+  } else {
+    showScreen('landing');
+  }
+
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      currentUser = session.user;
+      await loadDashboard();
+      showScreen('dashboard');
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      showScreen('landing');
+    }
+  });
+})();
+
+// ── SCREEN NAV ──
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(`screen-${name}`).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showAuth(tab) {
+  showScreen('auth');
+  switchAuthTab(tab);
+}
+
+function switchAuthTab(tab) {
+  document.getElementById('form-signup').style.display = tab === 'signup' ? 'block' : 'none';
+  document.getElementById('form-login').style.display = tab === 'login' ? 'block' : 'none';
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('auth-title').textContent = tab === 'signup' ? 'Create Account' : 'Welcome Back';
+  document.getElementById('auth-sub').textContent = tab === 'signup' ? 'Start protecting your business today.' : 'Sign in to your account.';
+}
+
+// ── AUTH ──
+async function handleSignup() {
+  clearErrors();
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+
+  let valid = true;
+  if (!name) { showError('err-signup-name'); valid = false; }
+  if (!email || !email.includes('@')) { showError('err-signup-email'); valid = false; }
+  if (password.length < 8) { showError('err-signup-pass'); valid = false; }
+  if (!valid) return;
+
+  setLoading('signup', true);
+
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: { data: { full_name: name } }
+  });
+
+  setLoading('signup', false);
+
+  if (error) {
+    showError('err-signup-general', error.message);
+    return;
+  }
+
+  if (data.user && !data.session) {
+    showToast('Check your email to confirm your account!');
+    return;
+  }
+})
+
+async function handleLogin() {
+  clearErrors();
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  let valid = true;
+  if (!email || !email.includes('@')) { showError('err-login-email'); valid = false; }
+  if (!password) { showError('err-login-pass'); valid = false; }
+  if (!valid) return;
+
+  setLoading('login', true);
+
+  const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+  setLoading('login', false);
+
+  if (error) {
+    showError('err-login-general', error.message);
+  }
+}
+
+async function handleForgotPassword() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) {
+    showError('err-login-email', 'Enter your email above first.');
+    return;
+  }
+  await supabase.auth.resetPasswordForEmail(email);
+  showToast('Password reset email sent!');
+}
+
+async function handleSignOut() {
+  closeMenu();
+  await supabase.auth.signOut();
+  showScreen('landing');
+}
+
+// ── DASHBOARD ──
+async function loadDashboard() {
+  if (!currentUser) return;
+  const name = currentUser.user_metadata?.full_name || currentUser.email.split('@')[0];
+  document.getElementById('dash-user-name').textContent = name.split(' ')[0];
+  document.getElementById('dash-user-email').textContent = currentUser.email;
+  document.getElementById('menu-user-name').textContent = name;
+  document.getElementById('menu-user-email-menu').textContent = currentUser.email;
+  await loadReports();
+}
+
+async function loadReports() {
+  if (!currentUser) return;
+
+  const { data: reports, error } = await supabase
+    .from('reports')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('created_at', { ascending: false });
+
+  if (error) return;
+
+  reportCount = reports ? reports.length : 0;
+  document.getElementById('menu-report-count').textContent = reportCount;
+
+  const remaining = Math.max(0, FREE_REPORT_LIMIT - reportCount);
+  if (reportCount < FREE_REPORT_LIMIT) {
+    document.getElementById('dash-report-status').textContent = `${remaining} free report${remaining !== 1 ? 's' : ''} remaining`;
+  } else {
+    document.getElementById('dash-report-status').textContent = 'Pro plan active';
+  }
+
+  const list = document.getElementById('report-list');
+  if (!reports || reports.length === 0) {
+    list.innerHTML = `<div class="empty-state"><div class="empty-icon">🛡️</div><div class="empty-text">No reports yet.<br/>Start your first one above.</div></div>`;
+    return;
+  }
+
+  list.innerHTML = reports.map(r => `
+    <div class="report-card">
+      <div class="report-card-left">
+        <div class="report-card-name">${r.client_name}</div>
+        <div class="report-card-vehicle">${r.vehicle_year || ''} ${r.vehicle_make_model || ''}</div>
+      </div>
+      <div class="report-card-right">
+        <div class="report-card-date">${formatDate(r.created_at)}</div>
+        <div class="report-card-badge">Sent ✓</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── REPORT BUILDER ──
+function startNewReport() {
+  if (reportCount >= FREE_REPORT_LIMIT) {
+    openPaywall();
+    return;
+  }
+  resetReport();
+  showScreen('report');
+  goToStep(1);
+}
+
+function resetReport() {
+  currentStep = 1;
+  damageItems = [];
+  signatureData = null;
+
+  document.getElementById('r-client-name').value = '';
+  document.getElementById('r-client-email').value = '';
+  document.getElementById('r-make-model').value = '';
+  document.getElementById('r-year').value = '';
+  document.getElementById('r-colour').value = '';
+  document.getElementById('damage-items-container').innerHTML = '';
+
+  addDamageItem();
+  initSignaturePad();
+}
+
+function confirmExitReport() {
+  if (confirm('Exit this report? Your progress will be lost.')) {
+    showScreen('dashboard');
+  }
+}
+
+// Step navigation
+function goToStep(n) {
+  currentStep = n;
+  document.querySelectorAll('.report-step').forEach(s => s.classList.remove('active'));
+  document.getElementById(`step-${n}`).classList.add('active');
+
+  // Update dots
+  for (let i = 1; i <= totalSteps; i++) {
+    const dot = document.getElementById(`dot-${i}`);
+    dot.classList.remove('active', 'done');
+    if (i < n) dot.classList.add('done');
+    else if (i === n) dot.classList.add('active');
+  }
+
+  const labels = ['Client & Vehicle', 'Damage Items', 'Client Signature', 'Review & Send'];
+  document.getElementById('report-step-label').textContent = `Step ${n} of ${totalSteps} — ${labels[n-1]}`;
+
+  document.getElementById('btn-prev').style.display = n > 1 ? 'block' : 'none';
+  const nextBtn = document.getElementById('btn-next-label');
+  nextBtn.textContent = n === totalSteps ? 'Send Report' : 'Continue';
+
+  if (n === totalSteps) populateReview();
+  window.scrollTo(0, 0);
+}
+
+function nextStep() {
+  if (currentStep === totalSteps) {
+    sendReport();
+    return;
+  }
+  if (!validateStep(currentStep)) return;
+  goToStep(currentStep + 1);
+}
+
+function prevStep() {
+  if (currentStep > 1) goToStep(currentStep - 1);
+}
+
+function validateStep(step) {
+  if (step === 1) {
+    const name = document.getElementById('r-client-name').value.trim();
+    const email = document.getElementById('r-client-email').value.trim();
+    const makeModel = document.getElementById('r-make-model').value.trim();
+    if (!name) { showToast('Please enter the client name.'); return false; }
+    if (!email || !email.includes('@')) { showToast('Please enter a valid client email.'); return false; }
+    if (!makeModel) { showToast('Please enter the vehicle make & model.'); return false; }
+    return true;
+  }
+  if (step === 2) {
+    for (let i = 0; i < damageItems.length; i++) {
+      const item = damageItems[i];
+      if (!item.type) { showToast(`Select a damage type for item ${i + 1}.`); return false; }
+      if (!item.location) { showToast(`Select a location for item ${i + 1}.`); return false; }
+    }
+    return true;
+  }
+  if (step === 3) {
+    if (!signatureData) { showToast('Please have the client sign before continuing.'); return false; }
+    return true;
+  }
+  return true;
+}
+
+// ── DAMAGE ITEMS ──
+function addDamageItem() {
+  const id = Date.now();
+  damageItems.push({ id, type: '', location: '', notes: '', photoDataUrl: null });
+  renderDamageItems();
+}
+
+function removeDamageItem(id) {
+  if (damageItems.length <= 1) { showToast('At least one damage item is required.'); return; }
+  damageItems = damageItems.filter(d => d.id !== id);
+  renderDamageItems();
+}
+
+function renderDamageItems() {
+  const container = document.getElementById('damage-items-container');
+  container.innerHTML = damageItems.map((item, i) => `
+    <div class="damage-item-card" id="damage-card-${item.id}">
+      <div class="damage-item-header">
+        <span class="damage-item-num">Damage Item ${i + 1}</span>
+        <div class="damage-item-remove" onclick="removeDamageItem(${item.id})">×</div>
+      </div>
+      <div class="damage-row">
+        <div class="form-group">
+          <label class="form-label">Type</label>
+          <select class="form-input" onchange="updateDamageItem(${item.id}, 'type', this.value)">
+            <option value="">Select...</option>
+            <option value="Scratch" ${item.type==='Scratch'?'selected':''}>Scratch</option>
+            <option value="Deep Scratch" ${item.type==='Deep Scratch'?'selected':''}>Deep Scratch</option>
+            <option value="Paint Chip" ${item.type==='Paint Chip'?'selected':''}>Paint Chip</option>
+            <option value="Dent" ${item.type==='Dent'?'selected':''}>Dent</option>
+            <option value="Swirl Marks" ${item.type==='Swirl Marks'?'selected':''}>Swirl Marks</option>
+            <option value="Scuff" ${item.type==='Scuff'?'selected':''}>Scuff</option>
+            <option value="Cracked Trim" ${item.type==='Cracked Trim'?'selected':''}>Cracked Trim</option>
+            <option value="Broken Mirror" ${item.type==='Broken Mirror'?'selected':''}>Broken Mirror</option>
+            <option value="Windscreen Chip" ${item.type==='Windscreen Chip'?'selected':''}>Windscreen Chip</option>
+            <option value="Other" ${item.type==='Other'?'selected':''}>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location</label>
+          <select class="form-input" onchange="updateDamageItem(${item.id}, 'location', this.value)">
+            <option value="">Select...</option>
+            <option value="Front" ${item.location==='Front'?'selected':''}>Front</option>
+            <option value="Rear" ${item.location==='Rear'?'selected':''}>Rear</option>
+            <option value="Driver Side" ${item.location==='Driver Side'?'selected':''}>Driver Side</option>
+            <option value="Passenger Side" ${item.location==='Passenger Side'?'selected':''}>Passenger Side</option>
+            <option value="Roof" ${item.location==='Roof'?'selected':''}>Roof</option>
+            <option value="Hood" ${item.location==='Hood'?'selected':''}>Hood</option>
+            <option value="Trunk" ${item.location==='Trunk'?'selected':''}>Trunk</option>
+            <option value="Front Bumper" ${item.location==='Front Bumper'?'selected':''}>Front Bumper</option>
+            <option value="Rear Bumper" ${item.location==='Rear Bumper'?'selected':''}>Rear Bumper</option>
+            <option value="Wheel/Rim" ${item.location==='Wheel/Rim'?'selected':''}>Wheel/Rim</option>
+            <option value="Windscreen" ${item.location==='Windscreen'?'selected':''}>Windscreen</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Notes (optional)</label>
+        <input type="text" class="form-input" placeholder="e.g. 3-inch scratch near door handle" value="${item.notes}" onchange="updateDamageItem(${item.id}, 'notes', this.value)" />
+      </div>
+      <label class="photo-capture-area ${item.photoDataUrl ? 'has-photo' : ''}" onclick="triggerPhoto(${item.id})">
+        <img class="photo-preview" src="${item.photoDataUrl || ''}" alt="Damage photo" />
+        <div class="photo-placeholder">
+          <div class="photo-icon">📷</div>
+          <p>Tap to photograph damage</p>
+        </div>
+        <div class="photo-change-overlay">Tap to retake photo</div>
+      </label>
+      <input type="file" accept="image/*" capture="environment" class="photo-input" id="photo-input-${item.id}" onchange="handlePhotoCapture(${item.id}, this)" />
+    </div>
+  `).join('');
+}
+
+function updateDamageItem(id, field, value) {
+  const item = damageItems.find(d => d.id === id);
+  if (item) item[field] = value;
+}
+
+function triggerPhoto(id) {
+  document.getElementById(`photo-input-${id}`).click();
+}
+
+function handlePhotoCapture(id, input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    compressImage(e.target.result, 800, (compressed) => {
+      const item = damageItems.find(d => d.id === id);
+      if (item) {
+        item.photoDataUrl = compressed;
+        renderDamageItems();
+      }
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function compressImage(dataUrl, maxWidth, callback) {
+  const img = new Image();
+  img.onload = () => {
+    const canvas = document.createElement('canvas');
+    let w = img.width, h = img.height;
+    if (w > maxWidth) { h = Math.round(h * maxWidth / w); w = maxWidth; }
+    canvas.width = w; canvas.height = h;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0, w, h);
+    callback(canvas.toDataURL('image/jpeg', 0.75));
+  };
+  img.src = dataUrl;
+}
+
+// ── SIGNATURE PAD ──
+function initSignaturePad() {
+  sigCanvas = document.getElementById('signature-canvas');
+  sigCtx = sigCanvas.getContext('2d');
+  sigCanvas.width = sigCanvas.offsetWidth;
+  sigCanvas.height = 200;
+  sigCtx.strokeStyle = '#111';
+  sigCtx.lineWidth = 3;
+  sigCtx.lineCap = 'round';
+  sigCtx.lineJoin = 'round';
+  signatureData = null;
+
+  sigCanvas.addEventListener('touchstart', startDraw, { passive: false });
+  sigCanvas.addEventListener('touchmove', draw, { passive: false });
+  sigCanvas.addEventListener('touchend', endDraw);
+  sigCanvas.addEventListener('mousedown', startDrawMouse);
+  sigCanvas.addEventListener('mousemove', drawMouse);
+  sigCanvas.addEventListener('mouseup', endDraw);
+}
+
+function getPos(e) {
+  const rect = sigCanvas.getBoundingClientRect();
+  const touch = e.touches ? e.touches[0] : e;
+  return {
+    x: (touch.clientX - rect.left) * (sigCanvas.width / rect.width),
+    y: (touch.clientY - rect.top) * (sigCanvas.height / rect.height)
+  };
+}
+
+function startDraw(e) {
+  e.preventDefault();
+  isDrawing = true;
+  const pos = getPos(e);
+  sigCtx.beginPath();
+  sigCtx.moveTo(pos.x, pos.y);
+  document.getElementById('sig-hint').classList.add('hidden');
+}
+
+function draw(e) {
+  e.preventDefault();
+  if (!isDrawing) return;
+  const pos = getPos(e);
+  sigCtx.lineTo(pos.x, pos.y);
+  sigCtx.stroke();
+}
+
+function endDraw() {
+  if (!isDrawing) return;
+  isDrawing = false;
+  signatureData = sigCanvas.toDataURL('image/png');
+}
+
+function startDrawMouse(e) { startDraw(e); }
+function drawMouse(e) { if (isDrawing) draw(e); }
+
+function clearSignature() {
+  sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  signatureData = null;
+  document.getElementById('sig-hint').classList.remove('hidden');
+}
+
+// ── REVIEW ──
+function populateReview() {
+  document.getElementById('rev-client-name').textContent = document.getElementById('r-client-name').value;
+  document.getElementById('rev-client-email').textContent = document.getElementById('r-client-email').value;
+  document.getElementById('rev-send-to').textContent = document.getElementById('r-client-email').value;
+
+  const year = document.getElementById('r-year').value;
+  const makeModel = document.getElementById('r-make-model').value;
+  const colour = document.getElementById('r-colour').value;
+  document.getElementById('rev-vehicle').textContent = `${year} ${makeModel} ${colour ? `(${colour})` : ''}`.trim();
+
+  document.getElementById('rev-damage-items').innerHTML = damageItems.map(item => `
+    <div class="review-damage-item">
+      ${item.photoDataUrl
+        ? `<img class="review-damage-thumb" src="${item.photoDataUrl}" />`
+        : `<div class="review-damage-thumb-placeholder">📷</div>`}
+      <div class="review-damage-info">
+        <div class="review-damage-type">${item.type || 'Unspecified'}</div>
+        <div class="review-damage-loc">${item.location || '—'}${item.notes ? ` · ${item.notes}` : ''}</div>
+      </div>
+    </div>
+  `).join('');
+
+  if (signatureData) {
+    document.getElementById('rev-signature').src = signatureData;
+  }
+}
+
+// ── SEND REPORT ──
+async function sendReport() {
+  const btn = document.getElementById('btn-next');
+  const label = document.getElementById('btn-next-label');
+  const spinner = document.getElementById('send-spinner');
+
+  btn.disabled = true;
+  label.style.display = 'none';
+  spinner.style.display = 'block';
+
+  try {
+    const reportId = generateReportId();
+    const timestamp = new Date().toISOString();
+
+    const payload = {
+      reportId,
+      timestamp,
+      detailerName: currentUser.user_metadata?.full_name || currentUser.email.split('@')[0],
+      detailerEmail: currentUser.email,
+      clientName: document.getElementById('r-client-name').value.trim(),
+      clientEmail: document.getElementById('r-client-email').value.trim(),
+      vehicleInfo: {
+        makeModel: document.getElementById('r-make-model').value.trim(),
+        year: document.getElementById('r-year').value.trim(),
+        colour: document.getElementById('r-colour').value.trim(),
+      },
+      damageItems,
+      signatureDataUrl: signatureData,
+    };
+
+    // Call Edge Function
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(EDGE_FUNCTION_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || 'Failed to send report.');
+    }
+
+    // Log to Supabase
+    await supabase.from('reports').insert({
+      id: reportId,
+      user_id: currentUser.id,
+      client_name: payload.clientName,
+      client_email: payload.clientEmail,
+      vehicle_make_model: payload.vehicleInfo.makeModel,
+      vehicle_year: payload.vehicleInfo.year,
+      vehicle_colour: payload.vehicleInfo.colour,
+      damage_count: damageItems.length,
+      created_at: timestamp,
+    });
+
+    reportCount++;
+    showSuccessScreen(payload);
+
+  } catch (err) {
+    showToast(`Error: ${err.message}`);
+    btn.disabled = false;
+    label.style.display = 'block';
+    spinner.style.display = 'none';
+  }
+}
+
+function showSuccessScreen(payload) {
+  document.getElementById('success-client-name').textContent = payload.clientName;
+  document.getElementById('success-sub').textContent =
+    `The signed PDF has been sent to ${payload.clientEmail} and to your inbox.`;
+
+  document.getElementById('success-detail').innerHTML = `
+    <div class="success-detail-row"><span>Report ID</span><span>#${payload.reportId}</span></div>
+    <div class="success-detail-row"><span>Vehicle</span><span>${payload.vehicleInfo.year} ${payload.vehicleInfo.makeModel}</span></div>
+    <div class="success-detail-row"><span>Damage items</span><span>${payload.damageItems.length}</span></div>
+    <div class="success-detail-row"><span>Time</span><span>${new Date(payload.timestamp).toLocaleTimeString()}</span></div>
+  `;
+
+  showScreen('success');
+}
+
+// ── MENU ──
+function openMenu() {
+  document.getElementById('menu-overlay').classList.add('active');
+  document.getElementById('menu-drawer').classList.add('open');
+}
+
+function closeMenu() {
+  document.getElementById('menu-overlay').classList.remove('active');
+  document.getElementById('menu-drawer').classList.remove('open');
+}
+
+// ── PAYWALL ──
+function openPaywall() {
+  document.getElementById('paywall-overlay').classList.add('active');
+}
+
+function closePaywall() {
+  document.getElementById('paywall-overlay').classList.remove('active');
+}
+
+function goToStripe() {
+  window.open(STRIPE_LINK, '_blank');
+  closePaywall();
+}
+
+// ── UTILS ──
+function generateReportId() {
+  return 'DS-' + Date.now().toString(36).toUpperCase() + '-' + Math.random().toString(36).substr(2, 4).toUpperCase();
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (msg) el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function clearErrors() {
+  document.querySelectorAll('.form-error').forEach(e => e.style.display = 'none');
+}
+
+function setLoading(type, loading) {
+  const btn = document.getElementById(`btn-${type}`);
+  const label = document.getElementById(`${type}-label`);
+  const spinner = document.getElementById(`${type}-spinner`);
+  btn.disabled = loading;
+  label.style.display = loading ? 'none' : 'inline';
+  spinner.style.display = loading ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
