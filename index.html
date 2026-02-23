@@ -1756,6 +1756,7 @@ function goToStep(n) {
   nextBtn.textContent = n === totalSteps ? 'Send Report' : 'Continue';
 
   if (n === totalSteps) populateReview();
+  if (n === 3) setTimeout(initSignaturePad, 150);
   window.scrollTo(0, 0);
 }
 
@@ -1764,7 +1765,16 @@ function nextStep() {
     sendReport();
     return;
   }
-  if (!validateStep(currentStep)) return;
+  if (!validateStep(currentStep)) {
+    // Reset button if stuck loading
+    const btn = document.getElementById('btn-next');
+    const label = document.getElementById('btn-next-label');
+    const spinner = document.getElementById('send-spinner');
+    btn.disabled = false;
+    label.style.display = 'inline';
+    spinner.style.display = 'none';
+    return;
+  }
   goToStep(currentStep + 1);
 }
 
@@ -1911,21 +1921,26 @@ function compressImage(dataUrl, maxWidth, callback) {
 
 // ── SIGNATURE PAD ──
 function initSignaturePad() {
+  const old = document.getElementById('signature-canvas');
+  const fresh = old.cloneNode(true);
+  old.parentNode.replaceChild(fresh, old);
   sigCanvas = document.getElementById('signature-canvas');
   sigCtx = sigCanvas.getContext('2d');
-  sigCanvas.width = sigCanvas.offsetWidth;
+  signatureData = null;
+
+  // Must set width AFTER element is visible
+  sigCanvas.width = sigCanvas.parentElement.clientWidth || (window.innerWidth - 40);
   sigCanvas.height = 200;
-  sigCtx.strokeStyle = '#111';
-  sigCtx.lineWidth = 3;
+  sigCtx.strokeStyle = '#1a1a1a';
+  sigCtx.lineWidth = 4;
   sigCtx.lineCap = 'round';
   sigCtx.lineJoin = 'round';
-  signatureData = null;
 
   sigCanvas.addEventListener('touchstart', startDraw, { passive: false });
   sigCanvas.addEventListener('touchmove', draw, { passive: false });
   sigCanvas.addEventListener('touchend', endDraw);
-  sigCanvas.addEventListener('mousedown', startDrawMouse);
-  sigCanvas.addEventListener('mousemove', drawMouse);
+  sigCanvas.addEventListener('mousedown', startDraw);
+  sigCanvas.addEventListener('mousemove', function(e) { if (isDrawing) draw(e); });
   sigCanvas.addEventListener('mouseup', endDraw);
 }
 
