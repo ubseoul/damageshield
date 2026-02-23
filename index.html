@@ -1523,7 +1523,7 @@ const STRIPE_LINK = 'https://buy.stripe.com/3cI9AS8nW2iY2NsgZZ7g400';
 const FREE_REPORT_LIMIT = 5;
 const EDGE_FUNCTION_URL = `${SUPABASE_URL}/functions/v1/send-report`;
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ── STATE ──
 let currentUser = null;
@@ -1536,7 +1536,7 @@ let reportCount = 0;
 
 // ── INIT ──
 (async () => {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await sb.auth.getSession();
   if (session) {
     currentUser = session.user;
     await loadDashboard();
@@ -1545,7 +1545,7 @@ let reportCount = 0;
     showScreen('landing');
   }
 
-  supabase.auth.onAuthStateChange(async (event, session) => {
+  sb.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
       currentUser = session.user;
       await loadDashboard();
@@ -1593,7 +1593,7 @@ async function handleSignup() {
 
   setLoading('signup', true);
 
-  const { data, error } = await supabase.auth.signUp({
+  const { data, error } = await sb.auth.signUp({
     email,
     password,
     options: { data: { full_name: name } }
@@ -1624,7 +1624,7 @@ async function handleLogin() {
 
   setLoading('login', true);
 
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { error } = await sb.auth.signInWithPassword({ email, password });
 
   setLoading('login', false);
 
@@ -1639,13 +1639,13 @@ async function handleForgotPassword() {
     showError('err-login-email', 'Enter your email above first.');
     return;
   }
-  await supabase.auth.resetPasswordForEmail(email);
+  await sb.auth.resetPasswordForEmail(email);
   showToast('Password reset email sent!');
 }
 
 async function handleSignOut() {
   closeMenu();
-  await supabase.auth.signOut();
+  await sb.auth.signOut();
   showScreen('landing');
 }
 
@@ -2029,7 +2029,7 @@ async function sendReport() {
     };
 
     // Call Edge Function
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await sb.auth.getSession();
     const res = await fetch(EDGE_FUNCTION_URL, {
       method: 'POST',
       headers: {
@@ -2045,7 +2045,7 @@ async function sendReport() {
     }
 
     // Log to Supabase
-    await supabase.from('reports').insert({
+    await sb.from('reports').insert({
       id: reportId,
       user_id: currentUser.id,
       client_name: payload.clientName,
