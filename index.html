@@ -70,6 +70,31 @@
 
     .landing-content { position: relative; z-index: 1; max-width: 420px; }
 
+    .landing-articles {
+      margin-top: 40px;
+      text-align: left;
+      border-top: 1px solid var(--border);
+      padding-top: 28px;
+    }
+    .landing-articles-label {
+      font-size: 11px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--text3);
+      margin-bottom: 14px;
+    }
+    .landing-article-link {
+      display: block;
+      color: var(--text2);
+      font-size: 14px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none;
+      transition: color 0.15s;
+    }
+    .landing-article-link:last-child { border-bottom: none; }
+    .landing-article-link:hover { color: var(--gold); text-decoration: none; }
+
     .landing-badge {
       display: inline-flex;
       align-items: center;
@@ -1205,6 +1230,15 @@
     </div>
 
     <p class="landing-disclaimer">No credit card required · 5 free reports · Then $20/month</p>
+
+    <div class="landing-articles">
+      <div class="landing-articles-label">Free Guides for Detailers</div>
+      <a class="landing-article-link" href="/guide-damage-claims.html">How to protect yourself from false damage claims →</a>
+      <a class="landing-article-link" href="/guide-inspection-checklist.html">Pre-service vehicle inspection checklist →</a>
+      <a class="landing-article-link" href="/guide-best-apps.html">Best apps for documenting vehicle damage →</a>
+      <a class="landing-article-link" href="/guide-customer-dispute.html">What to do when a customer blames you for damage →</a>
+      <a class="landing-article-link" href="/guide-damage-waiver.html">Do mobile detailers need a signed damage waiver? →</a>
+    </div>
   </div>
 </div>
 
